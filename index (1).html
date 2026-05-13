@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activated Insights · Sales Floor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f5f0e8;font-family:system-ui,-apple-system,sans-serif;margin:0;overflow:hidden}
+#wrap{background:#f5f0e8;color:#291e3b;height:100vh;display:flex;flex-direction:column}
+.topbar{background:#291e3b;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #f0b429;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-divider{width:1px;height:22px;background:#4a3a5c}
+.sales-label{font-size:12px;color:#a89bc0;letter-spacing:0.1em;text-transform:uppercase}
+.slide-counter{font-size:12px;color:#a89bc0;background:#3d2d55;padding:4px 12px;border-radius:20px}
+.ndots{display:flex;gap:5px;align-items:center;flex-wrap:wrap;max-width:400px;justify-content:flex-end}
+.ndot{width:7px;height:7px;border-radius:50%;background:#4a3a5c;cursor:pointer;transition:background 0.2s}
+.ndot.on{background:#f0b429}
+.pills{display:flex;gap:8px;padding:8px 28px;background:#291e3b;border-bottom:1px solid #3d2d55;flex-shrink:0}
+.pill{font-size:11px;padding:3px 12px;border-radius:20px;border:1px solid #4a3a5c;color:#6b7280;transition:all 0.3s}
+.pill.on{border-color:#4ade80;color:#4ade80}
+#status{display:none;padding:7px 28px;font-size:12px;flex-shrink:0}
+#status.ok{display:block;background:#0a2018;color:#4ade80;border-bottom:1px solid #14532d}
+#status.err{display:block;background:#200a0a;color:#f87171;border-bottom:1px solid #5a2d2d}
+.progress-bar{height:3px;background:#e8e0d4;flex-shrink:0}
+.progress-fill{height:3px;background:#f0b429;transition:width 0.1s linear}
+.content{flex:1;overflow:hidden;position:relative}
+.slide{display:none;padding:22px 28px;flex-direction:column;gap:14px;height:100%;position:absolute;top:0;left:0;right:0;bottom:0}
+.slide.on{display:flex}
+.tags{display:flex;gap:8px;margin-bottom:2px}
+.tag{font-size:13px;font-weight:700;padding:5px 15px;border-radius:20px;text-transform:uppercase;letter-spacing:0.07em}
+.tag-ae{background:#291e3b;color:#fff}
+.tag-bdr{background:#e8e0d4;color:#291e3b}
+.tag-mtd{background:#f0b429;color:#291e3b}
+.tag-sl{background:#6b3fa0;color:#fff}
+.tag-hbc{background:#291e3b;color:#f0b429}
+.tag-team{background:#f0b429;color:#291e3b}
+.headline{font-size:28px;font-weight:700;color:#291e3b;line-height:1.2}
+.subline{font-size:12px;color:#9a8fa8;margin-top:3px}
+.podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:4px}
+.pcard{background:#fff;border-radius:12px;border:1.5px solid #e8e0d4;padding:20px 16px;text-align:center;box-shadow:0 1px 4px rgba(41,30,59,0.07);display:flex;flex-direction:column;align-items:center}
+.pcard.p1{border-color:#f0b429;background:#fffbf0;box-shadow:0 3px 12px rgba(240,180,41,0.18)}
+.medal{font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;display:inline-block;margin-bottom:12px}
+.m1{background:#f0b429;color:#291e3b}
+.m2{background:#e8e0d4;color:#291e3b}
+.m3{background:#ede8f5;color:#6b3fa0}
+.av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;margin:0 auto 10px;border:2px solid #e8e0d4}
+.av-sl{background:#ede8f5;color:#6b3fa0}
+.av-hbc{background:#291e3b;color:#f0b429}
+.av-ent{background:#f0ebe0;color:#291e3b}
+.av-bdr-sl{background:#ede8f5;color:#6b3fa0}
+.av-bdr-hbc{background:#291e3b;color:#f0b429}
+.av-bdr-ent{background:#f0ebe0;color:#291e3b}
+.pname{font-size:16px;font-weight:600;color:#291e3b;margin-bottom:2px}
+.pteam{font-size:10px;color:#9a8fa8;margin-bottom:12px}
+.pval{font-size:30px;font-weight:700;color:#291e3b;line-height:1}
+.punit{font-size:11px;color:#9a8fa8;margin-top:4px}
+.no-data{color:#9a8fa8;font-size:14px;padding:24px 0}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+.tcard{background:#fff;border-radius:12px;border:1.5px solid #e8e0d4;padding:14px 18px;box-shadow:0 1px 4px rgba(41,30,59,0.07)}
+.tcard.lead{border-color:#f0b429;background:#fffbf0}
+.thead{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e8e0d4}
+.tdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tmgr{font-size:14px;font-weight:600;color:#291e3b}
+.tsub{font-size:9px;color:#9a8fa8}
+.tbadge{margin-left:auto;font-size:9px;padding:2px 8px;border-radius:20px;background:#f0b429;color:#291e3b;font-weight:700}
+.tstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+.tstat-l{font-size:8px;color:#9a8fa8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:2px}
+.tstat-v{font-size:16px;font-weight:700;color:#291e3b}
+.treps{border-top:1px solid #e8e0d4;padding-top:8px}
+.trep{display:flex;justify-content:space-between;padding:3px 0}
+.trep-n{font-size:11px;color:#9a8fa8}
+.trep-v{font-size:11px;font-weight:600;color:#291e3b}
+.botbar{padding:10px 28px;display:flex;align-items:center;gap:10px;background:#291e3b;border-top:2px solid #3d2d55;flex-shrink:0}
+.btn{font-size:12px;color:#a89bc0;background:#3d2d55;border:1px solid #4a3a5c;border-radius:8px;padding:6px 14px;cursor:pointer;transition:all 0.15s}
+.btn:hover{color:#fff;background:#4a3a5c}
+.btn.hi{color:#291e3b;background:#f0b429;border-color:#f0b429;font-weight:600}
+.ulbl{margin-left:auto;font-size:12px;color:#291e3b;background:#f0b429;border:1px solid #f0b429;border-radius:8px;padding:6px 18px;cursor:pointer;font-weight:600;transition:all 0.15s}
+.ulbl:hover{background:#e0a520}
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 28 28">
+        <path d="M9 19 L13 14 L7 16 Z" fill="#7c4dba"/>
+        <path d="M5 14 L12 13 L6 10 Z" fill="#7c4dba"/>
+        <path d="M7 9 L12 12 L10 6 Z" fill="#7c4dba"/>
+        <path d="M12 6 L13 13 L18 8 Z" fill="#f0b429"/>
+        <path d="M18 7 L14 13 L20 12 Z" fill="#f0b429"/>
+        <path d="M20 13 L14 14 L19 18 Z" fill="#f0b429"/>
+        <path d="M17 19 L13 14 L12 20 Z" fill="#f0b429"/>
+      </svg>
+      <span style="font-size:15px;font-weight:700;color:#fff;letter-spacing:0.01em">Activated Insights</span>
+      <div class="brand-divider"></div>
+      <span class="sales-label">Sales Floor · MTD</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="slide-counter" id="counter">1 / 10</span>
+      <div class="ndots" id="ndots"></div>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill" id="pill-ae">AE · MTD</span>
+    <span class="pill" id="pill-bdr">BDR · MTD</span>
+  </div>
+  <div id="status"></div>
+  <div class="progress-bar"><div class="progress-fill" id="pfill" style="width:0%"></div></div>
+  <div class="content" id="content"></div>
+  <div class="botbar">
+    <button class="btn" onclick="prev()">← prev</button>
+    <button class="btn hi" id="pbtn" onclick="togglePause()">pause</button>
+    <button class="btn" onclick="next()">next →</button>
+    <label class="ulbl" for="fup">⬆ upload CSV</label>
+    <input type="file" id="fup" accept=".csv,.xlsx,.xls" onchange="handleFile(event)">
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const ROSTER={
+  'Cait Lee':'sl','Gannon Sedlak':'sl','Shelley Daenzer':'sl','Josh Gayne':'sl',
+  'Jasmine Wieliczko':'sl','Colby Williams':'sl','Grace Grady':'sl','Drew Garside':'sl',
+  'Logan Hurd':'sl','Julia Carr':'sl','Caden Lowrance':'sl','Julia Blackwell':'sl',
+  'Dan Arzhanov':'hbc','Caden Noble':'hbc','Connor Hollman':'hbc','Jaxson Hellbusch':'hbc',
+  'Shawn Zbranek':'hbc','Clayton Jensen':'hbc','Luke DeMarcus':'hbc','Trevon Hymer':'hbc',
+  'Jessica Downing':'hbc','Del Jenkins':'hbc','Kyler Coles':'hbc','Travis Barton':'hbc',
+  'Ethan Hatch':'hbc','Brett Keys':'hbc','Bennet Bleil':'hbc','Riley Pettegrew':'hbc',
+  'Kaleb Polk':'hbc','Jordan Bailey':'hbc','Tony Humphreys':'hbc','Chris Pacis':'hbc',
+  'Tanner Schill':'hbc','Daniel Bonilla':'hbc','Nicholas Reis':'hbc','Mechell Howard':'hbc',
+  'Laurie Kaiser':'ent','Matthew Winkler':'ent','Lucas Brandt':'ent',
+  'Elliot Bryant':'bdr-sl','Kayla Keaveny':'bdr-sl','Robin Call':'bdr-sl',
+  'Alice Borg':'bdr-hbc','Ty Konold':'bdr-hbc','Ben Durpin':'bdr-hbc','Cooper Heywood':'bdr-hbc',
+  'Jack Satterthwaite':'bdr-ent'
+};
+const MGRS={
+  'Walpole':{label:'Michael Walpole',sub:'Senior Living',color:'#6b3fa0',reps:['Cait Lee','Gannon Sedlak','Shelley Daenzer','Josh Gayne','Jasmine Wieliczko','Colby Williams','Grace Grady','Drew Garside','Logan Hurd','Julia Carr','Caden Lowrance','Julia Blackwell']},
+  'Caleb':{label:'Caleb Hendricks',sub:'Home-Based Care',color:'#291e3b',reps:['Bennet Bleil','Caden Noble','Chris Pacis','Dan Arzhanov','Ethan Hatch','Kyler Coles','Nicholas Reis','Tony Humphreys']},
+  'Darin':{label:'Darin Ellsworth',sub:'Home-Based Care',color:'#f0b429',reps:['Brett Keys','Connor Hollman','Daniel Bonilla','Jaxson Hellbusch','Kaleb Polk','Riley Pettegrew','Tanner Schill']},
+  'Deana':{label:'Deana Ferguson',sub:'Home-Based Care',color:'#9c6dd0',reps:['Clayton Jensen','Del Jenkins','Jessica Downing','Luke DeMarcus','Mechell Howard','Trevon Hymer']},
+  'Alex':{label:'Alexandra Kreighbaum',sub:'Enterprise',color:'#c8a84b',reps:['Matthew Winkler','Laurie Kaiser','Lucas Brandt']}
+};
+const TL={'sl':'Senior Living','hbc':'Home-Based Care','ent':'Enterprise','bdr-sl':'BDR · SL','bdr-hbc':'BDR · HBC','bdr-ent':'BDR · Enterprise'};
+
+// Name aliases from export
+const ALIASES={
+  'bennet biel':'Bennet Bleil','elliott bryant':'Elliot Bryant',
+  'ben durgin':'Ben Durpin','lucas brandt':'Lucas Brandt'
+};
+
+function norm(n){const l=n.toLowerCase().trim();return ALIASES[l]||Object.keys(ROSTER).find(k=>k.toLowerCase()===l)||n.trim()}
+function ini(n){return n.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase()}
+function avc(t){if(t==='sl')return'av-sl';if(t==='hbc')return'av-hbc';if(t==='ent')return'av-ent';if(t==='bdr-sl')return'av-bdr-sl';if(t==='bdr-hbc')return'av-bdr-hbc';return'av-bdr-ent'}
+function fn(v){return Math.round(v||0).toLocaleString()}
+function fa(v){return(!v||v===0)?'—':'$'+Math.round(v).toLocaleString()}
+function pv(v){return v?parseFloat(v.toString().replace(/[$,]/g,''))||0:0}
+
+function mkRep(name){
+  const t=ROSTER[name];
+  return{name,team:t,calls:Math.floor(Math.random()*600)+30,msched:Math.floor(Math.random()*50)+3,
+    mheld:Math.floor(Math.random()*40)+2,acv:Math.random()>0.4?Math.floor(Math.random()*60000)+500:0,
+    qsos:Math.floor(Math.random()*10)+1,sourced:Math.random()>0.5?Math.floor(Math.random()*40000)+500:0,
+    talk:Math.floor(Math.random()*400)+20};
+}
+
+let DATA={
+  ae:Object.keys(ROSTER).filter(n=>!ROSTER[n].startsWith('bdr')).map(mkRep),
+  bdr:Object.keys(ROSTER).filter(n=>ROSTER[n].startsWith('bdr')).map(mkRep)
+};
+let loaded={ae:false,bdr:false};
+
+function setStatus(msg,type){
+  const el=document.getElementById('status');
+  el.className=type;el.textContent=msg;
+  if(type)setTimeout(()=>{el.className='';el.textContent=''},4000);
+}
+
+// Handle both row-per-rep AND section-based CSV formats
+function parseRows(rows){
+  // Detect format: section-based has a "Section" column
+  const hasSectionCol=rows.length>0&&('Section' in rows[0]||'section' in rows[0]);
+
+  if(hasSectionCol){
+    // Section-based format — pivot it
+    const SMAP={
+      'all sales calls (monthly)':'calls',
+      'meetings booked this month':'msched',
+      'meetings held this month':'mheld',
+      'monthly closed won by segment':'acv',
+      'bdr monthly sales calls':'calls',
+      'bdr meetings booked this month':'msched',
+      'bdr qsos this month':'qsos',
+      'bdr closed won this month':'sourced',
+      'bdr talk time this month':'talk'
+    };
+    const repMap={};
+    rows.forEach(row=>{
+      const section=(row['Section']||row['section']||'').toLowerCase().trim();
+      const name=norm(row['Team Member']||row['Name']||'');
+      const val=pv(row['Value']||row['MTD']||0);
+      const field=SMAP[section];
+      if(!field||!name)return;
+      if(!repMap[name])repMap[name]={name};
+      repMap[name][field]=val;
+    });
+    return Object.values(repMap).map(r=>{
+      const knownName=Object.keys(ROSTER).find(k=>k.toLowerCase()===r.name.toLowerCase())||r.name;
+      const team=ROSTER[knownName];
+      if(!team)return null;
+      return{name:knownName,team,...r};
+    }).filter(Boolean);
+  } else {
+    // Row-per-rep format
+    return rows.map(row=>{
+      const raw=(row['Team Member']||row['Name']||row['Rep']||'').toString().trim();
+      if(!raw)return null;
+      const name=norm(raw);
+      const team=ROSTER[name];
+      if(!team)return null;
+      return{name,team,
+        calls:pv(row['Outbound Call Activity']||row['Calls']||row['Outbound Calls']),
+        msched:pv(row['Meetings Scheduled']||row['Meetings Sched']||row['Scheduled']),
+        mheld:pv(row['Meetings Held']||row['Held']),
+        acv:pv(row['Closed Won ACV']||row['ACV']||row['Closed ACV']||row['MTD']),
+        qsos:pv(row['QSOs']||row['Qualified Sales Opportunities']||row['QSO']),
+        sourced:pv(row['Sourced Closed Won ACV']||row['Sourced ACV']||row['Sourced']),
+        talk:pv(row['Total Talk Time (in minutes)']||row['Talk Time']||row['Talk'])
+      };
+    }).filter(Boolean);
+  }
+}
+
+function handleFile(e){
+  const file=e.target.files[0];if(!file)return;
+  const isCSV=file.name.toLowerCase().endsWith('.csv');
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      let rows=[];
+      if(isCSV){
+        const lines=ev.target.result.trim().split('\n');
+        const hdrs=lines[0].split(',').map(h=>h.trim().replace(/"/g,''));
+        rows=lines.slice(1).filter(l=>l.trim()).map(l=>{
+          const v=l.split(',').map(x=>x.trim().replace(/"/g,''));
+          const o={};hdrs.forEach((h,i)=>o[h]=v[i]||'');return o;
+        });
+      }else{
+        const wb=XLSX.read(ev.target.result,{type:'array'});
+        rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+      }
+      const mapped=parseRows(rows);
+      if(!mapped.length){setStatus('No matching reps found — check column headers','err');return;}
+      const ae=mapped.filter(r=>!r.team.startsWith('bdr'));
+      const bdr=mapped.filter(r=>r.team.startsWith('bdr'));
+      const updated=[];
+      if(ae.length){DATA.ae=ae;loaded.ae=true;updated.push('AE')}
+      if(bdr.length){DATA.bdr=bdr;loaded.bdr=true;updated.push('BDR')}
+      document.getElementById('pill-ae').classList.toggle('on',loaded.ae);
+      document.getElementById('pill-bdr').classList.toggle('on',loaded.bdr);
+      render();
+      setStatus('✓ Loaded '+mapped.length+' reps — '+updated.join(' + ')+' MTD updated','ok');
+    }catch(err){setStatus('Error reading file — try CSV format','err');console.error(err)}
+  };
+  isCSV?reader.readAsText(file):reader.readAsArrayBuffer(file);
+  e.target.value='';
+}
+
+function top3(arr,key){return[...arr].filter(r=>(r[key]||0)>0).sort((a,b)=>(b[key]||0)-(a[key]||0)).slice(0,3)}
+
+function podHTML(reps,vFn,unit){
+  if(!reps.length)return'<p class="no-data">No data yet — upload your CSV to load</p>';
+  return'<div class="podium">'+['1st','2nd','3rd'].slice(0,reps.length).map((pl,i)=>`
+    <div class="pcard${i===0?' p1':''}">
+      <span class="medal m${i+1}">${pl}</span>
+      <div class="av ${avc(reps[i].team)}">${ini(reps[i].name)}</div>
+      <div class="pname">${reps[i].name}</div>
+      <div class="pteam">${TL[reps[i].team]||reps[i].team}</div>
+      <div class="pval">${vFn(reps[i])}</div>
+      ${unit?`<div class="punit">${unit}</div>`:''}
+    </div>`).join('')+'</div>';
+}
+
+function teamHTML(){
+  const stats=Object.values(MGRS).map(m=>{
+    const reps=m.reps.map(n=>DATA.ae.find(d=>d.name===n)||{name:n,calls:0,msched:0,acv:0});
+    return{...m,calls:reps.reduce((s,r)=>s+(r.calls||0),0),msched:reps.reduce((s,r)=>s+(r.msched||0),0),acv:reps.reduce((s,r)=>s+(r.acv||0),0),reps};
+  }).sort((a,b)=>b.acv-a.acv);
+  return'<div class="tgrid">'+stats.map((m,i)=>`
+    <div class="tcard${i===0?' lead':''}">
+      <div class="thead">
+        <div class="tdot" style="background:${m.color}"></div>
+        <div><div class="tmgr">${m.label}</div><div class="tsub">${m.sub}</div></div>
+        ${i===0?'<span class="tbadge">leading</span>':''}
+      </div>
+      <div class="tstats">
+        <div><div class="tstat-l">ACV MTD</div><div class="tstat-v" style="font-size:14px">${fa(m.acv)}</div></div>
+        <div><div class="tstat-l">Calls</div><div class="tstat-v">${fn(m.calls)}</div></div>
+        <div><div class="tstat-l">Meetings</div><div class="tstat-v">${fn(m.msched)}</div></div>
+      </div>
+      <div class="treps">${[...m.reps].sort((a,b)=>(b.acv||0)-(a.acv||0)).slice(0,4).map(r=>`
+        <div class="trep"><span class="trep-n">${r.name}</span><span class="trep-v">${(r.acv||0)>0?fa(r.acv):'—'}</span></div>`).join('')}
+      </div>
+    </div>`).join('')+'</div>';
+}
+
+const SLIDES=[
+  {tags:['tag-ae','tag-mtd'],t:['AE','Month to Date'],h:'Top caller',sub:'Account executives · outbound calls MTD',key:'calls',src:'ae',vFn:r=>fn(r.calls),unit:'calls'},
+  {tags:['tag-ae','tag-mtd'],t:['AE','Month to Date'],h:'Top meeting booked',sub:'Account executives · meetings scheduled MTD',key:'msched',src:'ae',vFn:r=>fn(r.msched),unit:'meetings'},
+  {tags:['tag-ae','tag-mtd'],t:['AE','Month to Date'],h:'Top closed ACV',sub:'Account executives · closed won MTD',key:'acv',src:'ae',vFn:r=>fa(r.acv),unit:''},
+  {tags:['tag-sl','tag-mtd'],t:['Senior Living','Month to Date'],h:'Top Senior Living AEs',sub:'Closed ACV this month',key:'acv',src:'ae',filter:'sl',vFn:r=>fa(r.acv),unit:''},
+  {tags:['tag-hbc','tag-mtd'],t:['Home-Based Care','Month to Date'],h:'Top Home-Based Care AEs',sub:'Closed ACV this month',key:'acv',src:'ae',filter:'hbc',vFn:r=>fa(r.acv),unit:''},
+  {type:'team'},
+  {tags:['tag-bdr','tag-mtd'],t:['BDR','Month to Date'],h:'Top caller',sub:'BDRs · outbound calls MTD',key:'calls',src:'bdr',vFn:r=>fn(r.calls),unit:'calls'},
+  {tags:['tag-bdr','tag-mtd'],t:['BDR','Month to Date'],h:'Top meeting booked',sub:'BDRs · meetings scheduled MTD',key:'msched',src:'bdr',vFn:r=>fn(r.msched),unit:'meetings'},
+  {tags:['tag-bdr','tag-mtd'],t:['BDR','Month to Date'],h:'Top QSOs',sub:'BDRs · qualified sales opportunities MTD',key:'qsos',src:'bdr',vFn:r=>fn(r.qsos),unit:'QSOs'},
+  {tags:['tag-bdr','tag-mtd'],t:['BDR','Month to Date'],h:'Top deals sourced',sub:'BDRs · sourced closed ACV MTD',key:'sourced',src:'bdr',vFn:r=>fa(r.sourced),unit:''}
+];
+
+let cur=0,paused=false,pval=0,ptick;
+const DUR=7000;
+
+function slideHTML(s,i){
+  if(s.type==='team')return`
+    <div class="tags"><span class="tag tag-team">Team Totals</span><span class="tag tag-mtd">Month to Date</span></div>
+    <div class="headline">Team performance</div>
+    <div class="subline">All AE teams · closed ACV + activity this month</div>
+    ${teamHTML()}`;
+  let reps=DATA[s.src]||[];
+  if(s.filter)reps=reps.filter(r=>r.team===s.filter);
+  return`
+    <div class="tags">${s.tags.map((t,j)=>`<span class="tag ${t}">${s.t[j]}</span>`).join('')}</div>
+    <div class="headline">${s.h}</div>
+    <div class="subline">${s.sub}</div>
+    ${podHTML(top3(reps,s.key),s.vFn,s.unit)}`;
+}
+
+function render(){
+  document.getElementById('content').innerHTML=SLIDES.map((s,i)=>`<div class="slide${i===cur?' on':''}" id="s${i}">${slideHTML(s,i)}</div>`).join('');
+  document.getElementById('ndots').innerHTML=SLIDES.map((_,i)=>`<div class="ndot${i===cur?' on':''}" onclick="go(${i})"></div>`).join('');
+  document.getElementById('counter').textContent=`${cur+1} / ${SLIDES.length}`;
+}
+
+function show(i){
+  document.querySelectorAll('.slide').forEach((el,j)=>el.classList.toggle('on',j===i));
+  document.querySelectorAll('.ndot').forEach((el,j)=>el.classList.toggle('on',j===i));
+  document.getElementById('counter').textContent=`${i+1} / ${SLIDES.length}`;
+}
+function go(i){cur=i;show(i);pval=0;document.getElementById('pfill').style.width='0%'}
+function next(){cur=(cur+1)%SLIDES.length;show(cur);pval=0;document.getElementById('pfill').style.width='0%'}
+function prev(){cur=(cur-1+SLIDES.length)%SLIDES.length;show(cur);pval=0;document.getElementById('pfill').style.width='0%'}
+function tick(){
+  clearInterval(ptick);if(paused)return;
+  ptick=setInterval(()=>{
+    pval+=100;
+    document.getElementById('pfill').style.width=Math.min(pval/DUR*100,100)+'%';
+    if(pval>=DUR){pval=0;next()}
+  },100);
+}
+function togglePause(){
+  paused=!paused;
+  const b=document.getElementById('pbtn');
+  b.textContent=paused?'resume':'pause';
+  b.classList.toggle('hi',!paused);
+  paused?clearInterval(ptick):tick();
+}
+render();tick();
+</script>
+</body>
+</html>
